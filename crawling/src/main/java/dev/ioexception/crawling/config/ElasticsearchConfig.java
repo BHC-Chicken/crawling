@@ -35,8 +35,14 @@ public class ElasticsearchConfig {
     @Value("${spring.elasticsearch.password}")
     private String password;
 
+    @Value("${caPath}")
+    private String certificationPath;
+
     @Value("${spring.elasticsearch.uris}")
     private String[] exHost;
+
+    private final int FLUSH_INTERVAL = 1;
+    private final int MAX_OPERATION = 10000;
 
     @Bean
     public RestClient buildClient() throws Exception {
@@ -54,7 +60,7 @@ public class ElasticsearchConfig {
                         .setSocketTimeout(70000)
         );
 
-        String caPath = "/Users/phc/development/blog-es/elasticsearch-adjust/config/certs/http_ca.crt";
+        String caPath = certificationPath;
         CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
         X509Certificate trustedCa;
 
@@ -63,7 +69,7 @@ public class ElasticsearchConfig {
         }
 
         KeyStore trustStore = KeyStore.getInstance("pkcs12");
-        trustStore.load(null,null);
+        trustStore.load(null, null);
         trustStore.setCertificateEntry("ca", trustedCa);
 
         SSLContext sslContext = SSLContexts.custom()
@@ -90,11 +96,11 @@ public class ElasticsearchConfig {
     }
 
     @Bean
-    public BulkIngester<BulkOperation> bulkIngester (ElasticsearchClient client, BulkIngestListener<BulkOperation> listener) {
+    public BulkIngester<BulkOperation> bulkIngester(ElasticsearchClient client, BulkIngestListener<BulkOperation> listener) {
         return BulkIngester.of(b -> b
                 .client(client)
-                .flushInterval(1, TimeUnit.SECONDS)
-                .maxOperations(10000)
+                .flushInterval(FLUSH_INTERVAL, TimeUnit.SECONDS)
+                .maxOperations(MAX_OPERATION)
                 .listener(listener));
     }
 

@@ -1,12 +1,12 @@
 server:
-  port: 8080
+  port: 80
 
 spring:
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://crawling-server.c4y9vm1irfhh.ap-northeast-2.rds.amazonaws.com:3306/test2 #jdbc:mariadb://192.168.201.229:3306/kakao
-    username: admin
-    password: adminadmin
+    username: "${username}"
+    password: "${password}"
+    url: "${url}"
 
   #의존성 추가
   servlet:
@@ -19,16 +19,28 @@ spring:
     defer-datasource-initialization: true
     hibernate.ddl-auto: none
     properties:
-      hibernate.format_sql: true
+      hibernate:
+        show_sql: false
+        use_sql_comments: true
+        format_sql: false
     generate-ddl: true
+  elasticsearch:
+    username: "${spring.elasticsearch.username}"
+    password: "${spring.elasticsearch.password}"
+    uris: "${spring.elasticsearch.uris}"
+
+caPath: "${caPath}"
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
 
 cloud:
   aws:
     credentials:
-      accessKey: AKIARIZNV6JYGNGN2CZH # IAM 사용자 엑세스 키
-      secretKey: 67CUpdBvEYNRhF4C3zW1pZ7C8GfUuy0DdRE0zn7L # IAM 사용자 비밀 엑세스 키
+      accessKey:
+      secretKey:
     s3:
-      bucketName: classmoaimage # 버킷명
+      bucketName:
     region:
       static: ap-northeast-2 # 리전
     stack:
@@ -36,6 +48,28 @@ cloud:
 
 logging:
   level:
-    web: debug
+    org:
+      elasticsearch:
+        client: debug
+      springframework:
+        data:
+          elasticsearch:
+            client: debug
+      hibernate:
+        type:
+          descriptor:
+            sql: trace
+    root: info
+    dev.ioexception: info
+  file:
+    name: "${log.path}"
 #  sql.init.mode: always
 
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: *
+#  endpoint:
+#    metrics:
+#      enabled: true

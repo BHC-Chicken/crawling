@@ -19,8 +19,8 @@ public class CrawlingController {
 //        crawlingService.getMega();
 //        crawlingService.getGoorm();
 //        crawlingService.getArtandStudy();
-        crawlingService.getInflearn();
-//        indexService.inputIndex();
+//        crawlingService.getInflearn();
+        indexService.inputIndexByJavaClient();
         // crawlingService.getClassu();
         // crawlingService.getYbm();
     }

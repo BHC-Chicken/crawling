@@ -21,13 +21,13 @@ public class TimeAspect {
         return retVal;
     }
 
-    @Around("execution(* dev.ioexception.crawling.service.IndexService.inputIndex(..))")
-    public Object indexTime(ProceedingJoinPoint joinPoint) throws Throwable {
+    @Around("execution(* dev.ioexception.crawling.service.IndexService.inputIndexByJavaClient(..))")
+    public Object indexTimeByJavaClient(ProceedingJoinPoint joinPoint) throws Throwable {
         long start = System.currentTimeMillis();
         Object retVal = joinPoint.proceed();
         long end = System.currentTimeMillis();
 
-        log.info("index method execution time: {} milliseconds.", end - start);
+        log.info("index method by java client execution time: {} milliseconds.", end - start);
 
         return retVal;
     }

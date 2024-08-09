@@ -9,6 +9,7 @@ import dev.ioexception.crawling.repository.LectureTagRepository;
 import dev.ioexception.crawling.repository.TagRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -100,11 +101,9 @@ public class InflearnCrawling {
         }
 
         Elements contents = documentPage.select("ul.mantine-1avyp1d li.mantine-1avyp1d");
-        System.out.println(contents);
 
         for (Element content : contents) {
             Lecture lecture = saveLecture(content);
-            System.out.println(lecture);
 
             if (lecture != null) {
                 lectureArrayList.add(saveLecture(content));

@@ -1,9 +1,8 @@
-package dev.ioexception.crawling.dto;
+package dev.ioexception.crawling.dto.response;
 
 import dev.ioexception.crawling.entity.Lecture;
 import dev.ioexception.crawling.entity.LectureDocument;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
