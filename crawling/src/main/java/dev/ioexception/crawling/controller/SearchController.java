@@ -2,9 +2,12 @@ package dev.ioexception.crawling.controller;
 
 import dev.ioexception.crawling.dto.response.LectureDetailResponse;
 import dev.ioexception.crawling.dto.response.LectureMonthPriceResponse;
+import dev.ioexception.crawling.dto.response.LectureYearPriceDBResponse;
 import dev.ioexception.crawling.dto.response.LectureYearPriceResponse;
 import dev.ioexception.crawling.dto.response.SearchedLectureResponse;
 import dev.ioexception.crawling.service.search.ElasticSearchServiceImpl;
+import dev.ioexception.crawling.service.search.MariaDBSearchServiceImpl;
+import dev.ioexception.crawling.service.search.SearchService;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -20,14 +23,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class SearchController {
     private final ElasticSearchServiceImpl searchService;
+    private final MariaDBSearchServiceImpl mariaDBSearchService;
 
-    public SearchController(ElasticSearchServiceImpl service) {
-        this.searchService = service;
+    public SearchController(ElasticSearchServiceImpl searchService, MariaDBSearchServiceImpl mariaDBSearchService) {
+        this.searchService = searchService;
+        this.mariaDBSearchService = mariaDBSearchService;
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<SearchedLectureResponse>> search(@RequestParam String q) throws IOException {
-        List<SearchedLectureResponse> result = searchService.search(q);
+    public ResponseEntity<List<SearchedLectureResponse>> search(@RequestParam String q, @RequestParam String f) throws IOException {
+        List<SearchedLectureResponse> result = searchService.search(q, f);
 
         return ResponseEntity.ok(result);
     }
@@ -61,5 +66,12 @@ public class SearchController {
                                                                     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date)
             throws IOException {
         return ResponseEntity.ok(searchService.lecturePriceMonthAgg(q, date));
+    }
+
+    @GetMapping("/db-year-agg")
+    public ResponseEntity<List<LectureYearPriceDBResponse>> dbYearAgg(@RequestParam String q) {
+        List<LectureYearPriceDBResponse> result = mariaDBSearchService.lecturePriceYearAgg(q);
+
+        return ResponseEntity.ok(result);
     }
 }
