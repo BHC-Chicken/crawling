@@ -5,5 +5,5 @@ import java.io.IOException;
 import java.util.List;
 
 public interface SearchService {
-    List<SearchedLectureResponse> search(String q) throws IOException;
+    List<SearchedLectureResponse> search(String q, String f) throws IOException;
 }

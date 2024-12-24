@@ -1,5 +1,6 @@
 package dev.ioexception.crawling.service.search;
 
+import co.elastic.clients.elasticsearch.ElasticsearchAsyncClient;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.SortOrder;
@@ -15,6 +16,7 @@ import dev.ioexception.crawling.dto.response.LectureYearPriceResponse;
 import dev.ioexception.crawling.dto.response.SearchedLectureResponse;
 import dev.ioexception.crawling.entity.LectureDocument;
 import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -23,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,24 +36,27 @@ import org.springframework.stereotype.Service;
 public class ElasticSearchServiceImpl implements SearchService {
 
     private final ElasticsearchClient client;
+    private final ElasticsearchAsyncClient asyncClient;
 
     @Override
-    public List<SearchedLectureResponse> search(String q) throws IOException {
-        long start = System.currentTimeMillis();
-
+    public List<SearchedLectureResponse> search(String q, String f) throws IOException {
         SearchRequest searchRequest = SearchRequest.of(s -> s
                 .index("lecture")
                 .query(query -> query
-                        .match(m -> m
-                                .field("title")
-                                .query(q))));
+                        .bool(bool -> bool
+                                .must(m -> m
+                                        .match(match -> match
+                                                .field(f)
+                                                .query(q)))
+                                .must(m -> m
+                                        .range(r -> r.field(
+                                                        "date")
+                                                .from(LocalDate.now().toString())
+                                                .to(LocalDate.now().toString())))))
+                .routing(q));
+
 
         SearchResponse<LectureDocument> lectures = client.search(searchRequest, LectureDocument.class);
-
-        long end = System.currentTimeMillis();
-
-        log.info("ES_METRIC query.requests=1, query.question={}, query.execution.time={}, timestamp={}", q, end - start,
-                System.currentTimeMillis());
 
         return lectures.hits().hits().stream()
                 .map(Hit::source).filter(Objects::nonNull)
