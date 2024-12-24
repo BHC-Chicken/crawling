@@ -1,5 +1,6 @@
 package dev.ioexception.crawling.config;
 
+import co.elastic.clients.elasticsearch.ElasticsearchAsyncClient;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._helpers.bulk.BulkIngester;
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
@@ -8,12 +9,6 @@ import co.elastic.clients.transport.rest_client.RestClientOptions;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import java.io.FileInputStream;
-import java.security.KeyStore;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.util.concurrent.TimeUnit;
-import javax.net.ssl.SSLContext;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -26,6 +21,13 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import javax.net.ssl.SSLContext;
+import java.io.FileInputStream;
+import java.security.KeyStore;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class ElasticsearchConfig {
@@ -96,7 +98,17 @@ public class ElasticsearchConfig {
     }
 
     @Bean
-    public BulkIngester<BulkOperation> bulkIngester(ElasticsearchClient client, BulkIngestListener<BulkOperation> listener) {
+    public ElasticsearchClient elasticsearchClient(RestClientTransport restClientTransport) {
+        return new ElasticsearchClient(restClientTransport);
+    }
+
+    @Bean
+    public ElasticsearchAsyncClient elasticsearchAsyncClient(RestClientTransport restClientTransport) {
+        return new ElasticsearchAsyncClient(restClientTransport);
+    }
+
+    @Bean
+    public BulkIngester<BulkOperation> bulkIngester(ElasticsearchClient client, BulkIngestListenerImpl<BulkOperation> listener) {
         return BulkIngester.of(b -> b
                 .client(client)
                 .flushInterval(FLUSH_INTERVAL, TimeUnit.SECONDS)
@@ -105,7 +117,7 @@ public class ElasticsearchConfig {
     }
 
     @Bean
-    public BulkIngestListener<BulkOperation> bulkIngestListener() {
-        return new BulkIngestListener<>();
+    public BulkIngestListenerImpl<BulkOperation> bulkIngestListener() {
+        return new BulkIngestListenerImpl<>();
     }
 }
