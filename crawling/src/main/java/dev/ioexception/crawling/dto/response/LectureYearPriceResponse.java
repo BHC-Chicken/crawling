@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LectureYearPriceResponse {
-    private LocalDate data;
+    private LocalDate date;
     private int price;
 
     public static LectureYearPriceResponse toDto(LectureDocument lectureDocument) {
