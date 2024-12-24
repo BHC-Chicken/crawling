@@ -48,25 +48,18 @@ public class InflearnCrawling {
             return;
         }
 
-//        Element page = document.select("div.mantine-ktc6ma div.mantine-o8b522 button.mantine-z1qa8g button:last-child").first();
-//        System.out.println(page);
-        int lastPage = 1;
+        Elements page = document.select("footer nav div.pagination_container ul.pagination-list li:last-child");
+        int lastPage = Integer.parseInt(page.select("a.pagination-link").text());
+
         ConcurrentLinkedQueue<Lecture> lectures = new ConcurrentLinkedQueue<>();
 
-
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
-
         for (int currentPage = 1; currentPage <= lastPage; currentPage++) {
-            final int pageToCrawl = currentPage;
-
-            int finalCurrentPage = currentPage;
-            executorService.submit(() -> {
-                ArrayList<Lecture> lectureArrayList = crawlPage(pageToCrawl);
+                ArrayList<Lecture> lectureArrayList = crawlPage(currentPage);
 
                 if (lectureArrayList != null) {
                     lectures.addAll(lectureArrayList);
                 } else {
-                    log.error("{} page fail", finalCurrentPage);
+                    log.error("{} page fail", currentPage);
                 }
 
                 try {
@@ -74,18 +67,9 @@ public class InflearnCrawling {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-            });
         }
 
         lectureRepository.saveAll(lectures);
-
-        try {
-            if (!executorService.awaitTermination(1, TimeUnit.HOURS)) {
-                executorService.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            executorService.shutdownNow();
-        }
     }
 
     public ArrayList<Lecture> crawlPage(int page) {
@@ -94,7 +78,7 @@ public class InflearnCrawling {
                 () -> Jsoup.connect("https://www.inflearn.com/courses?types=ONLINE&page_number=" + page).get()
         );
 
-        log.info("Crawling inflearn page: " + page);
+        log.info("Crawling inflearn page: {}", page);
 
         if (documentPage == null) {
             return null;
@@ -115,8 +99,8 @@ public class InflearnCrawling {
 
     public Lecture saveLecture(Element content) {
         String lectureId = getCourseNumber(content);
-//        String imageLink = handleIOException(
-//                () -> uploadImage.uploadFromUrlToS3(getImage(content), SITE_NAME, lectureId));
+        String imageLink = handleIOException(
+                () -> uploadImage.uploadFromUrlToS3(getImage(content), SITE_NAME, lectureId));
 
         if (getOriginPrice(content) == -2) {
             return null;
@@ -126,7 +110,7 @@ public class InflearnCrawling {
 
         Lecture lecture = Lecture.builder()
                 .lectureId(lectureId)
-                .imageLink("image link")
+                .imageLink(imageLink)
                 .salePercent(getSalePercent(content))
                 .title(getTitle(content))
                 .siteLink(getUrl(content))
@@ -169,6 +153,7 @@ public class InflearnCrawling {
 
     private String getCourseNumber(Element content) {
         log.info("content: {}", content.text());
+
         return SITE_NAME + content.select("div.mantine-1w8yksd img").attr("abs:src").split("/")[4];
     }
 
