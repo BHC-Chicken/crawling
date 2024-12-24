@@ -22,27 +22,23 @@ public class UploadImage {
     private final AmazonS3 amazonS3Client;
     private final String BUCKET_NAME = "crawling-img";
 
-    // 이미지 데이터를 바로 S3에 업로드
     public String uploadFromUrlToS3(String imageUrl, String dirName, String filename) throws IOException {
-        // 이미지 데이터를 바이트 배열로 읽어옴
         byte[] imageBytes = readImageBytes(imageUrl);
 
-        // S3에 저장할 파일명 생성
-        String fileName = dirName + "/" + filename + ".jpg";  // 확장자는 이미지 종류에 따라 변경
+        String fileName = dirName + "/" + filename + ".jpg";
         ObjectMetadata objectMetadata = new ObjectMetadata();
 
         if (imageBytes != null) {
             objectMetadata.setContentLength(imageBytes.length);
         } else {
+
             return "no image";
         }
 
-        // S3에 파일 업로드
         amazonS3Client.putObject(
                 new PutObjectRequest(BUCKET_NAME, fileName, new ByteArrayInputStream(imageBytes), objectMetadata)
                         .withCannedAcl(CannedAccessControlList.PublicRead));
 
-        // 업로드된 이미지 URL 반환
         return amazonS3Client.getUrl(BUCKET_NAME, fileName).toString();
     }
 

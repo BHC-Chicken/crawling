@@ -3,15 +3,14 @@ package dev.ioexception.crawling.config;
 import co.elastic.clients.elasticsearch._helpers.bulk.BulkListener;
 import co.elastic.clients.elasticsearch.core.BulkRequest;
 import co.elastic.clients.elasticsearch.core.BulkResponse;
-import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 
-@Configuration
-public class BulkIngestListener<Context> implements BulkListener<Context> {
+import java.util.List;
 
-    private static final Logger log = LoggerFactory.getLogger(BulkIngestListener.class);
+@Slf4j
+@Configuration
+public class BulkIngestListenerImpl<Context> implements BulkListener<Context> {
 
     @Override
     public void beforeBulk(long executionId, BulkRequest request, List<Context> contexts) {
